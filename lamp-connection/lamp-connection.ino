@@ -2,6 +2,8 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+#include <Time.h>
+
 #define GREEN_LED1      14
 #define GREEN_LED2      13
 #define BLUE_LED1       12
@@ -15,6 +17,7 @@
 bool api_isPressed = false;
 
 #define ALARM_BUTTON    2
+bool time_beingSet = false;
 
 #define CONSOLE_IP "192.168.1.2"
 #define CONSOLE_PORT 4210
@@ -27,6 +30,8 @@ IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
 int adcValue = 0;
+
+time_t t = now();
 
 void clear_leds() {
   digitalWrite(BLUE_LED1, LOW);
@@ -77,16 +82,25 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
+  
   Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-  Udp.print(adcValue);
+  //Udp.print(adcValue);
   Udp.endPacket();
 
-  if (API_BUTTON == LOW && api_isPressed) {
-    //TODO
+  if (!time_beingSet) {
+    if (API_BUTTON == LOW && api_isPressed && waiting_button) {
+      //read from potenciometer 
   
-    api_isPressed = !api_isPressed;
-  } else if (API_BUTTON == HIGH && !api_isPressed) {
-    api_isPressed = !api_isPressed;
+      waiting_button = false;
+      api_isPressed = !api_isPressed;
+    } else if (API_BUTTON == LOW && api_isPressed && !waiting_button) {
+      //TODO
+      waiting_button = true;
+      api_isPressed = !api_isPressed;
+    } else if (API_BUTTON == HIGH && !api_isPressed) {
+      api_isPressed = !api_isPressed;
+    }
   }
   
   //in a perfect world the leds would accommadate different values
@@ -99,7 +113,7 @@ void loop() {
   }
 
   adcValue = analogRead(34);
-  Serial.println(adcValue);
+  //Serial.println(adcValue);
   
   delay(100);
 }

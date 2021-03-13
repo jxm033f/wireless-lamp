@@ -12,7 +12,6 @@ with open('current-5day-forecast.json') as f:
 
 day_num = weather_data['daily']
 
-
 while True:
     data, addr = sock.recvfrom(2048)
     print(data)
