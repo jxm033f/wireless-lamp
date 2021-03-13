@@ -10,8 +10,8 @@ sock.bind((LOCAL_UDP_IP, SHARED_UDP_PORT))
 with open('current-5day-forecast.json') as f:
     weather_data = json.load(f)
 
-daily_weather = weather_data['daily']
-print(len(daily_weather))
+day_num = weather_data['daily']
+
 
 while True:
     data, addr = sock.recvfrom(2048)
