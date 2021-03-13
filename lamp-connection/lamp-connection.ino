@@ -13,10 +13,12 @@
 #define RED_LED1        18
 #define RED_LED2        15
 
-#define API_BUTTON      0
+#define API_BUTTON      39
 bool api_isPressed = false;
+bool api_beingSet = false;
 
 #define ALARM_BUTTON    2
+bool alarm_isPressed = false;
 bool time_beingSet = false;
 
 #define CONSOLE_IP "192.168.1.2"
@@ -29,7 +31,8 @@ IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
-int adcValue = 0;
+int photoValue = 0;
+int potenValue = 0;
 
 time_t t = now();
 
@@ -74,8 +77,9 @@ void setup() {
 
   pinMode(API_BUTTON, INPUT);
 
-  adcValue = analogRead(34);
-  Serial.println(adcValue);
+  photoValue = analogRead(34);
+  potenValue = analogRead(35);
+  
   WiFi.softAP(ssid, password);
   WiFi.softAPConfig(local_ip, gateway, subnet);
   server.begin();
@@ -84,36 +88,55 @@ void setup() {
 void loop() {
   //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
   
-  Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-  //Udp.print(adcValue);
-  Udp.endPacket();
+//  Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+//  //Udp.print(potenValue);
+//  Udp.endPacket();
 
   if (!time_beingSet) {
-    if (API_BUTTON == LOW && api_isPressed && waiting_button) {
-      //read from potenciometer 
+    if (API_BUTTON == LOW && api_isPressed && api_beingSet) {
+      //read from potenciometer
+      int which_day = potenValue / 585;
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print("Day:" + which_day);
+      Udp.endPacket();
+
+      Serial.println(which_day);
   
-      waiting_button = false;
+      api_beingSet = false;
       api_isPressed = !api_isPressed;
-    } else if (API_BUTTON == LOW && api_isPressed && !waiting_button) {
-      //TODO
-      waiting_button = true;
+    } else if (API_BUTTON == LOW && api_isPressed && !api_beingSet) {
+      api_beingSet = true;
       api_isPressed = !api_isPressed;
+
+      Serial.println("WORKING?");
     } else if (API_BUTTON == HIGH && !api_isPressed) {
+      Serial.println("HELLO?");
       api_isPressed = !api_isPressed;
     }
   }
   
-  //in a perfect world the leds would accommadate different values
-  //since we are focusing on LOW or HIGH there can only be two options
-  //i assume 1000 as the baseline with bedroom lights or a sunny day
-  if (adcValue < 1000) {
-    clear_leds();
-  } else {
-    fill_color("YELLOW");
+  if (!api_beingSet) {
+    if (ALARM_BUTTON == LOW && alarm_isPressed) {
+      
+
+      alarm_isPressed = !alarm_isPressed;
+    } else if (ALARM_BUTTON == HIGH && !alarm_isPressed) {
+      alarm_isPressed = !alarm_isPressed;
+    }
+  }
+  
+  if (!api_beingSet && !time_beingSet) {
+    //in a perfect world the leds would accommadate different values
+    //since we are focusing on LOW or HIGH there can only be two options
+    //i assume 1000 as the baseline with bedroom lights or a sunny day
+    if (photoValue < 1200) {
+      clear_leds();
+    } else {
+      fill_color("YELLOW");
+    }
   }
 
-  adcValue = analogRead(34);
+  photoValue = analogRead(34);
+  potenValue = analogRead(35);
   //Serial.println(adcValue);
-  
-  delay(100);
 }
