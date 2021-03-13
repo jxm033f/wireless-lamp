@@ -11,6 +11,11 @@
 #define RED_LED1        18
 #define RED_LED2        15
 
+#define API_BUTTON      0
+bool api_isPressed = false;
+
+#define ALARM_BUTTON    2
+
 #define CONSOLE_IP "192.168.1.2"
 #define CONSOLE_PORT 4210
 const char* ssid = "ESP32";
@@ -62,6 +67,8 @@ void setup() {
   pinMode(RED_LED1, OUTPUT);
   pinMode(RED_LED2, OUTPUT);
 
+  pinMode(API_BUTTON, INPUT);
+
   adcValue = analogRead(34);
   Serial.println(adcValue);
   WiFi.softAP(ssid, password);
@@ -74,8 +81,22 @@ void loop() {
   Udp.print(adcValue);
   Udp.endPacket();
 
-  clear_leds();
-  fill_color("YELLOW");
+  if (API_BUTTON == LOW && api_isPressed) {
+    //TODO
+  
+    api_isPressed = !api_isPressed;
+  } else if (API_BUTTON == HIGH && !api_isPressed) {
+    api_isPressed = !api_isPressed;
+  }
+  
+  //in a perfect world the leds would accommadate different values
+  //since we are focusing on LOW or HIGH there can only be two options
+  //i assume 1000 as the baseline with bedroom lights or a sunny day
+  if (adcValue < 1000) {
+    clear_leds();
+  } else {
+    fill_color("YELLOW");
+  }
 
   adcValue = analogRead(34);
   Serial.println(adcValue);
