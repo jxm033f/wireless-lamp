@@ -187,13 +187,42 @@ void loop() {
 
       time_beingSet = true;
       alarm_isPressed = !alarm_isPressed;
-      delay(100);
+      delay(10);
     } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && !hour_isSet && !min_isSet && !sec_isSet) {
-      
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print("MIN");
+      Udp.endPacket();
+
+      hour_isSet = true;
+      alarm_isPressed = !alarm_isPressed;
+      delay(10);
+    } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && hour_isSet && !min_isSet && !sec_isSet) {
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print("SEC");
+      Udp.endPacket();
+
+      min_isSet = true;
+      alarm_isPressed = !alarm_isPressed;
+      delay(10);
+    } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && hour_isSet && min_isSet && !sec_isSet) {
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print("CONFIRM");
+      Udp.endPacket();
+
+      sec_isSet = true;
+      alarm_isPressed = !alarm_isPressed;
+      delay(10);
     } else if (alarmValue == HIGH && !alarm_isPressed) {
       alarm_isPressed = !alarm_isPressed;
       delay(10);
     }
+  }
+
+  if (hour_isSet & min_isSet && sec_isSet) {
+    hour_isSet = false;
+    min_isSet = false;
+    sec_isSet = false;
+    time_beingSet = false;
   }
 
   if (time_beingSet) {
