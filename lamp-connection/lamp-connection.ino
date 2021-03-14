@@ -111,27 +111,6 @@ void setup() {
 void loop() {
   //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
 
-//  int packetSize = Udp.parsePacket();
-//  if (packetSize) {
-//    int message_len = Udp.read(packetBuffer, 255);
-//    if (message_len > 0) {
-//      packetBuffer[message_len] = 0;
-//    }
-//    Serial.println(packetBuffer);
-//  }
-
-//  WiFiClient client_side = server.available();
-//  if (client_side) {
-//    currentLine = "";
-//    while (client_side.connected()) {
-//      if (client_side.available()) {
-//        char c = client_side.read();
-//        currentLine += c;
-//      }
-//    }
-//    Serial.println(currentLine);
-//  }
-
   while (Serial.available() > 0) {
     char c = Serial.read();
     currentLine = c;
@@ -231,5 +210,4 @@ void loop() {
 
   photoValue = analogRead(34);
   potenValue = analogRead(35);
-  //Serial.println(adcValue);
 }

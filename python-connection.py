@@ -35,23 +35,14 @@ while True:
         weather_info = day_num[num-1]['temp']['day']
         print("Weather for Day " + str(num) + " is " + str(weather_info))
         if weather_info <= weather_range[0]:
-            #less than equal to 40
-            #sock.sendto("BLUE".encode(), ("192.168.1.1", 4210))
-            #arduino.write("BLUE")
             arduino.write("B".encode())
             mode_time = False
         elif weather_info > weather_range[0] and weather_info <= weather_range[1]:
-            #between 41 and 50
-            #sock.sendto("GREEN".encode(), ("192.168.1.1", 4210))
             arduino.write("G".encode())
             mode_time = False
         elif weather_info > weather_range[1] and weather_info <= weather_range[2]:
-            #between 51 and 60
-            #sock.sendto("YELLOW".encode(), ("192.168.1.1", 4210))
             arduino.write("Y".encode())
             mode_time = False
         elif weather_info > weather_range[2]:
-            #greater than 60
-            #sock.sendto("RED".encode(), ("192.168.1.1", 4210))
             arduino.write("R".encode())
             mode_time = False
