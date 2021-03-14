@@ -32,6 +32,7 @@ IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 char packetBuffer[255];
+String currentLine;
 
 int photoValue = 0;
 int potenValue = 0;
@@ -110,11 +111,40 @@ void setup() {
 void loop() {
   //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
 
-  int packetSize = Udp.parsePacket();
-  if (packetSize) {
-    int message_len = Udp.read(packetBuffer, 255);
-    if (message_len > 0) {
-      packetBuffer[message_len] = 0;
+//  int packetSize = Udp.parsePacket();
+//  if (packetSize) {
+//    int message_len = Udp.read(packetBuffer, 255);
+//    if (message_len > 0) {
+//      packetBuffer[message_len] = 0;
+//    }
+//    Serial.println(packetBuffer);
+//  }
+
+//  WiFiClient client_side = server.available();
+//  if (client_side) {
+//    currentLine = "";
+//    while (client_side.connected()) {
+//      if (client_side.available()) {
+//        char c = client_side.read();
+//        currentLine += c;
+//      }
+//    }
+//    Serial.println(currentLine);
+//  }
+
+  while (Serial.available() > 0) {
+    char c = Serial.read();
+    currentLine = c;
+  }
+  if (currentLine != "") {
+    if (currentLine == "B") {
+      currentLine = "BLUE";
+    } else if (currentLine == "G") {
+      currentLine = "GREEN";
+    } else if (currentLine == "Y") {
+      currentLine = "YELLOW";
+    } else if (currentLine == "R") {
+      currentLine = "RED";
     }
   }
 
@@ -164,26 +194,26 @@ void loop() {
   }
   
   if (api_status) {
-    if (packetBuffer == "BLUE") {
+    if (currentLine == "BLUE") {
       clear_yellow();
       clear_green();
       clear_red();
-      fill_color(packetBuffer);
-    } else if (packetBuffer == "GREEN") {
+      fill_color(currentLine);
+    } else if (currentLine == "GREEN") {
       clear_yellow();
       clear_blue();
       clear_red();
-      fill_color(packetBuffer);
-    } else if (packetBuffer == "YELLOW") {
+      fill_color(currentLine);
+    } else if (currentLine == "YELLOW") {
       clear_green();
       clear_blue();
       clear_red();
-      fill_color(packetBuffer);
-    } else if (packetBuffer == "RED") {
+      fill_color(currentLine);
+    } else if (currentLine == "RED") {
       clear_yellow();
       clear_blue();
       clear_green();
-      fill_color(packetBuffer);
+      fill_color(currentLine);
     }
   } else if (!api_status) {
     //in a perfect world the leds would accommadate different values
