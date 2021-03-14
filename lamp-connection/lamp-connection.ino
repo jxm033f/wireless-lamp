@@ -13,7 +13,7 @@
 #define RED_LED1        18
 #define RED_LED2        15
 
-#define API_BUTTON      39
+#define API_BUTTON      5
 bool api_isPressed = false;
 bool api_beingSet = false;
 
@@ -30,6 +30,7 @@ IPAddress local_ip(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
+char packetBuffer[255];
 
 int photoValue = 0;
 int potenValue = 0;
@@ -43,6 +44,26 @@ void clear_leds() {
   digitalWrite(GREEN_LED2, LOW);
   digitalWrite(YELLOW_LED1, LOW);
   digitalWrite(YELLOW_LED2, LOW);
+  digitalWrite(RED_LED1, LOW);
+  digitalWrite(RED_LED2, LOW);
+}
+
+void clear_blue() {
+  digitalWrite(BLUE_LED1, LOW);
+  digitalWrite(BLUE_LED2, LOW);
+}
+
+void clear_green() {
+  digitalWrite(GREEN_LED1, LOW);
+  digitalWrite(GREEN_LED2, LOW);
+}
+
+void clear_yellow() {
+  digitalWrite(YELLOW_LED1, LOW);
+  digitalWrite(YELLOW_LED2, LOW);
+}
+
+void clear_red() {
   digitalWrite(RED_LED1, LOW);
   digitalWrite(RED_LED2, LOW);
 }
@@ -75,7 +96,7 @@ void setup() {
   pinMode(RED_LED1, OUTPUT);
   pinMode(RED_LED2, OUTPUT);
 
-  pinMode(API_BUTTON, INPUT);
+  pinMode(API_BUTTON, INPUT_PULLUP);
 
   photoValue = analogRead(34);
   potenValue = analogRead(35);
@@ -87,51 +108,92 @@ void setup() {
 
 void loop() {
   //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
-  
-//  Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-//  //Udp.print(potenValue);
-//  Udp.endPacket();
+
+  int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    int message_len = Udp.read(packetBuffer, 255);
+    if (message_len > 0) {
+      packetBuffer[message_len] = 0;
+    }
+  }
 
   if (!time_beingSet) {
-    if (API_BUTTON == LOW && api_isPressed && api_beingSet) {
-      //read from potenciometer
-      int which_day = potenValue / 585;
-      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-      Udp.print("Day:" + which_day);
-      Udp.endPacket();
+    int apiValue = digitalRead(API_BUTTON);
 
-      Serial.println(which_day);
-  
+    if (apiValue == LOW && api_isPressed && api_beingSet) {
+      //read from potenciometer
+      int which_day = (potenValue / 585) + 1;
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print(which_day);
+      Udp.endPacket();
+      
       api_beingSet = false;
       api_isPressed = !api_isPressed;
-    } else if (API_BUTTON == LOW && api_isPressed && !api_beingSet) {
+      delay(10);
+    } else if (apiValue == LOW && api_isPressed && !api_beingSet) {
+      api_status = true;
       api_beingSet = true;
       api_isPressed = !api_isPressed;
-
-      Serial.println("WORKING?");
-    } else if (API_BUTTON == HIGH && !api_isPressed) {
-      Serial.println("HELLO?");
+      delay(10);
+    } else if (apiValue == HIGH && !api_isPressed) {
       api_isPressed = !api_isPressed;
+      delay(10);
     }
   }
-  
-  if (!api_beingSet) {
-    if (ALARM_BUTTON == LOW && alarm_isPressed) {
-      
 
+  int alarmValue = digitalRead(ALARM_BUTTON);
+  if (api_status && !api_beingSet) {
+    if (alarmValue == LOW && alarm_isPressed) {
+      api_status = false;
       alarm_isPressed = !alarm_isPressed;
-    } else if (ALARM_BUTTON == HIGH && !alarm_isPressed) {
+      delay(10);
+    } else if (alarmValue == HIGH && !alarm_isPressed) {
       alarm_isPressed = !alarm_isPressed;
+      delay(10);
+    }
+  } else if (!api_status && !api_beingSet) {
+    if (alarmValue == LOW && alarm_isPressed) {
+      
+      alarm_isPressed = !alarm_isPressed;
+      delay(10);
+    } else if (alarmValue == HIGH && !alarm_isPressed) {
+      alarm_isPressed = !alarm_isPressed;
+      delay(10);
     }
   }
   
-  if (!api_beingSet && !time_beingSet) {
+  if (api_status) {
+    if (packetBuffer == "BLUE") {
+      clear_yellow();
+      clear_green();
+      clear_red();
+      fill_color(packetBuffer);
+    } else if (packetBuffer == "GREEN") {
+      clear_yellow();
+      clear_blue();
+      clear_red();
+      fill_color(packetBuffer);
+    } else if (packetBuffer == "YELLOW") {
+      clear_green();
+      clear_blue();
+      clear_red();
+      fill_color(packetBuffer);
+    } else if (packetBuffer == "RED") {
+      clear_yellow();
+      clear_blue();
+      clear_green();
+      fill_color(packetBuffer);
+    }
+  } else if (!api_status) {
     //in a perfect world the leds would accommadate different values
     //since we are focusing on LOW or HIGH there can only be two options
     //i assume 1000 as the baseline with bedroom lights or a sunny day
     if (photoValue < 1200) {
       clear_leds();
     } else {
+      clear_blue();
+      clear_green();
+      clear_red();
       fill_color("YELLOW");
     }
   }
