@@ -9,7 +9,7 @@
 #define BLUE_LED1       12
 #define BLUE_LED2       27
 #define YELLOW_LED1     19
-#define YELLOW_LED2     4
+#define YELLOW_LED2     0
 #define RED_LED1        18
 #define RED_LED2        15
 
@@ -18,7 +18,7 @@ bool api_isPressed = false;
 bool api_beingSet = false;
 bool api_status = false;
 
-#define ALARM_BUTTON    2
+#define ALARM_BUTTON    4
 bool alarm_isPressed = false;
 bool time_beingSet = false;
 
@@ -99,6 +99,7 @@ void setup() {
   pinMode(RED_LED2, OUTPUT);
 
   pinMode(API_BUTTON, INPUT_PULLUP);
+  pinMode(ALARM_BUTTON, INPUT_PULLUP);
 
   photoValue = analogRead(34);
   potenValue = analogRead(35);
@@ -131,7 +132,8 @@ void loop() {
     int apiValue = digitalRead(API_BUTTON);
 
     if (apiValue == LOW && api_isPressed && api_beingSet) {
-      //read from potenciometer
+      Serial.println("Selected Day for API");
+      
       int which_day = (potenValue / 585) + 1;
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print(which_day);
@@ -141,6 +143,7 @@ void loop() {
       api_isPressed = !api_isPressed;
       delay(10);
     } else if (apiValue == LOW && api_isPressed && !api_beingSet) {
+      Serial.println("API is turned on");
       api_status = true;
       api_beingSet = true;
       api_isPressed = !api_isPressed;
@@ -153,7 +156,9 @@ void loop() {
 
   int alarmValue = digitalRead(ALARM_BUTTON);
   if (api_status && !api_beingSet) {
+    Serial.println(alarmValue);
     if (alarmValue == LOW && alarm_isPressed) {
+      Serial.println("API is turned off");
       api_status = false;
       alarm_isPressed = !alarm_isPressed;
       delay(10);
@@ -163,7 +168,7 @@ void loop() {
     }
   } else if (!api_status && !api_beingSet) {
     if (alarmValue == LOW && alarm_isPressed) {
-      
+      Serial.println("ALARM IS PRESSED");
       alarm_isPressed = !alarm_isPressed;
       delay(10);
     } else if (alarmValue == HIGH && !alarm_isPressed) {

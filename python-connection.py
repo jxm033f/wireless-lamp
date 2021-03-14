@@ -24,6 +24,7 @@ mode_api = False
 while True:
     data, addr = sock.recvfrom(2048)
     data = data.decode()
+    print(data)
     if data and not mode_time and not mode_api:
         if data.isdigit():
             mode_api = True
