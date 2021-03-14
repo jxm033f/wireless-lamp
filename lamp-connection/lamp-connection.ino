@@ -16,6 +16,7 @@
 #define API_BUTTON      5
 bool api_isPressed = false;
 bool api_beingSet = false;
+bool api_status = false;
 
 #define ALARM_BUTTON    2
 bool alarm_isPressed = false;

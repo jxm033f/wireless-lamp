@@ -11,7 +11,7 @@ with open('current-5day-forecast.json') as f:
     weather_data = json.load(f)
 
 day_num = weather_data['daily']
-weather_range = [40, 50, 60, 70]
+weather_range = [40, 50, 60]
 
 mode_time = False
 mode_api = False
@@ -29,3 +29,19 @@ while True:
         num = int(data)
         weather_info = day_num[num-1]['temp']['day']
         print("Weather for Day " + str(num) + " is " + str(weather_info))
+        if weather_info <= weather_range[0]:
+            #less than equal to 40
+            sock.send("BLUE".encode())
+            mode_time = False
+        elif weather_info > weather_range[0] and weather_info <= weather_range[1]:
+            #between 41 and 50
+            sock.send("GREEN".encode())
+            mode_time = False
+        elif weather_info > weather_range[1] and weather_info <= weather_range[2]:
+            #between 51 and 60
+            sock.send("YELLOW".encode())
+            mode_time = False
+        elif weather_info > weather_range[2]:
+            #greater than 60
+            sock.send("RED".encode())
+            mode_time = False
