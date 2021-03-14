@@ -21,6 +21,9 @@ bool api_status = false;
 #define ALARM_BUTTON    4
 bool alarm_isPressed = false;
 bool time_beingSet = false;
+bool hour_isSet = false;
+bool min_isSet = false;
+bool sec_isSet = false;
 
 #define CONSOLE_IP "192.168.1.2"
 #define CONSOLE_PORT 4210
@@ -36,8 +39,9 @@ String currentLine;
 
 int photoValue = 0;
 int potenValue = 0;
+int prevPoten = 0;
 
-time_t t = now();
+time_t t;
 
 void clear_leds() {
   digitalWrite(BLUE_LED1, LOW);
@@ -110,6 +114,10 @@ void setup() {
 }
 
 void loop() {
+  photoValue = analogRead(34);
+  prevPoten = potenValue;
+  potenValue = analogRead(35);
+  
   //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
 
   while (Serial.available() > 0) {
@@ -132,7 +140,6 @@ void loop() {
     int apiValue = digitalRead(API_BUTTON);
 
     if (apiValue == LOW && api_isPressed && api_beingSet) {
-      Serial.println("Selected Day for API");
       
       int which_day = (potenValue / 585) + 1;
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
@@ -156,9 +163,12 @@ void loop() {
 
   int alarmValue = digitalRead(ALARM_BUTTON);
   if (api_status && !api_beingSet) {
-    Serial.println(alarmValue);
     if (alarmValue == LOW && alarm_isPressed) {
       Serial.println("API is turned off");
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print("CANCEL");
+      Udp.endPacket();
+      
       api_status = false;
       alarm_isPressed = !alarm_isPressed;
       delay(10);
@@ -167,13 +177,53 @@ void loop() {
       delay(10);
     }
   } else if (!api_status && !api_beingSet) {
-    if (alarmValue == LOW && alarm_isPressed) {
-      Serial.println("ALARM IS PRESSED");
+    if (alarmValue == LOW && alarm_isPressed && !time_beingSet) {
+      //t = now();
+      //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
+      
+      Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+      Udp.print("TIME");
+      Udp.endPacket();
+
+      time_beingSet = true;
       alarm_isPressed = !alarm_isPressed;
-      delay(10);
+      delay(100);
+    } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && !hour_isSet && !min_isSet && !sec_isSet) {
+      
     } else if (alarmValue == HIGH && !alarm_isPressed) {
       alarm_isPressed = !alarm_isPressed;
       delay(10);
+    }
+  }
+
+  if (time_beingSet) {
+    if (!hour_isSet && !min_isSet && !sec_isSet) {
+      int current_hour = potenValue /178;
+      int prev_hour = prevPoten / 178;
+      if (current_hour != prev_hour) {
+        Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+        Udp.print(current_hour);
+        Udp.endPacket();
+        delay(10);
+      }
+    } else if (hour_isSet && !min_isSet && !sec_isSet) {
+      int current_min = potenValue / 69;
+      int prev_min = prevPoten / 69;
+      if (current_min != prev_min) {
+        Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+        Udp.print(current_min);
+        Udp.endPacket();
+        delay(10);
+      }
+    } else if (hour_isSet && min_isSet && !sec_isSet) {
+      int current_sec = potenValue / 69;
+      int prev_sec = prevPoten / 69;
+      if (current_sec != prev_sec) {
+        Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+        Udp.print(current_sec);
+        Udp.endPacket();
+        delay(10);
+      }
     }
   }
   
@@ -212,7 +262,4 @@ void loop() {
       fill_color("YELLOW");
     }
   }
-
-  photoValue = analogRead(34);
-  potenValue = analogRead(35);
 }
