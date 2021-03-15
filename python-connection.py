@@ -20,12 +20,14 @@ weather_range = [40, 50, 60]
 
 mode_time = False
 mode_api = False
+mode_alarm = True
 
 hms_option = 0;
 time_holder = 0;
 hour_time = 0;
 min_time = 0;
 sec_time = 0;
+selected_time = ""
 
 while True:
     data, addr = sock.recvfrom(2048)
@@ -88,5 +90,15 @@ while True:
                 str_sec = "0" + str(sec_time)
             else:
                 str_sec = str(sec_time)
-            print("Time selected is " + str_hour + ":" + str_min + ":" + str_sec)
+            selected_time = str_hour + ":" + str_min + ":" + str_sec
+            print("Time selected is " + selected_time)
             mode_time = False
+            mode_alarm = True
+    
+    if data and mode_alarm:
+        if len(data) == 8:
+            print(data)
+        if selected_time == data:
+            print("HOORAY")
+            mode_alarm = False
+            arduino.write("F".encode())

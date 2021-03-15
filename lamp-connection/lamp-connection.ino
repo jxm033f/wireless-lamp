@@ -23,6 +23,8 @@ bool time_beingSet = false;
 bool hour_isSet = false;
 bool min_isSet = false;
 bool sec_isSet = false;
+bool alarm_isOn = false;
+time_t t;
 
 #define CONSOLE_IP "192.168.1.2"
 #define CONSOLE_PORT 4210
@@ -39,8 +41,6 @@ String currentLine;
 int photoValue = 0;
 int potenValue = 0;
 int prevPoten = 0;
-
-time_t t;
 
 void clear_leds() {
   digitalWrite(BLUE_LED1, LOW);
@@ -132,6 +132,8 @@ void loop() {
       currentLine = "YELLOW";
     } else if (currentLine == "R") {
       currentLine = "RED";
+    } else if (currentLine == "F") {
+      alarm_isOn = false;
     }
   }
 
@@ -230,8 +232,51 @@ void loop() {
     min_isSet = false;
     sec_isSet = false;
     time_beingSet = false;
+    t = now();
+    alarm_isOn = true;
 
-    Serial.println("Time is Set");
+    Serial.println("Alarm is on");
+  }
+
+  if (alarm_isOn) {
+    int program_sec = (hour() * 360) + (minute() * 60) + second();
+    int remove_sec = (hour(t) * 360) + (minute(t) * 60) + second(t);
+    int real_total_sec = program_sec - remove_sec;
+    int real_hr =  real_total_sec / 360;
+    if (real_hr > 0) {
+      real_total_sec %= 360;
+    }
+    int real_min = real_total_sec / 60;
+    if (real_min > 0) {
+      real_total_sec %= 60;
+    }
+    int real_sec = real_total_sec;
+    String current_time = "";
+    if (real_hr < 10) {
+      current_time += "0";
+      current_time += String(real_hr);
+    } else {
+      current_time += String(real_hr);
+    }
+    current_time += ":";
+    if (real_min < 10) {
+      current_time += "0";
+      current_time += String(real_min);
+    } else {
+      current_time += String(real_min);
+    }
+    current_time += ":";
+    if (real_sec < 10) {
+      current_time += "0";
+      current_time += String(real_sec);
+    } else {
+      current_time += String(real_sec);
+    }
+    Serial.println(current_time);
+    Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+    Udp.print(current_time);
+    Udp.endPacket();
+    delay(10);
   }
 
   if (time_beingSet) {
@@ -266,7 +311,7 @@ void loop() {
   }
   
   if (api_status) {
-    if (photoValue < 1200) {
+    if (photoValue < 550) {
       clear_leds();
     } else {
       if (currentLine == "BLUE") {
@@ -294,8 +339,9 @@ void loop() {
   } else if (!api_status) {
     //in a perfect world the leds would accommadate different values
     //since we are focusing on LOW or HIGH there can only be two options
-    //i assume 1000 as the baseline with bedroom lights or a sunny day
-    if (photoValue < 1200) {
+    //i assume 550 as the baseline with bedroom lights or a sunny day
+    Serial.println(photoValue);
+    if (photoValue < 550) {
       clear_leds();
     } else {
       clear_blue();
