@@ -338,7 +338,6 @@ void loop() {
       }
     }
   } else if (!api_status) {
-    Serial.println(photoValue);
     if (photoValue < 550) {
       clear_leds();
     } else {
