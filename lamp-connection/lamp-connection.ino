@@ -1,7 +1,6 @@
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
-
 #include <Time.h>
 
 #define GREEN_LED1      14
@@ -140,7 +139,6 @@ void loop() {
     int apiValue = digitalRead(API_BUTTON);
 
     if (apiValue == LOW && api_isPressed && api_beingSet) {
-      
       int which_day = (potenValue / 585) + 1;
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print(which_day);
@@ -150,8 +148,15 @@ void loop() {
       api_isPressed = !api_isPressed;
       delay(10);
     } else if (apiValue == LOW && api_isPressed && !api_beingSet) {
-      Serial.println("API is turned on");
-      api_status = true;
+      Serial.println("API is turned on/Ready to change value");
+
+      if (api_status == false) {
+        api_status = true;
+        Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+        Udp.print("API");
+        Udp.endPacket();
+      }
+      
       api_beingSet = true;
       api_isPressed = !api_isPressed;
       delay(10);
@@ -184,6 +189,8 @@ void loop() {
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print("TIME");
       Udp.endPacket();
+
+      Serial.println("Time is being set");
 
       time_beingSet = true;
       alarm_isPressed = !alarm_isPressed;
@@ -223,6 +230,8 @@ void loop() {
     min_isSet = false;
     sec_isSet = false;
     time_beingSet = false;
+
+    Serial.println("Time is Set");
   }
 
   if (time_beingSet) {
@@ -257,26 +266,30 @@ void loop() {
   }
   
   if (api_status) {
-    if (currentLine == "BLUE") {
-      clear_yellow();
-      clear_green();
-      clear_red();
-      fill_color(currentLine);
-    } else if (currentLine == "GREEN") {
-      clear_yellow();
-      clear_blue();
-      clear_red();
-      fill_color(currentLine);
-    } else if (currentLine == "YELLOW") {
-      clear_green();
-      clear_blue();
-      clear_red();
-      fill_color(currentLine);
-    } else if (currentLine == "RED") {
-      clear_yellow();
-      clear_blue();
-      clear_green();
-      fill_color(currentLine);
+    if (photoValue < 1200) {
+      clear_leds();
+    } else {
+      if (currentLine == "BLUE") {
+        clear_yellow();
+        clear_green();
+        clear_red();
+        fill_color(currentLine);
+      } else if (currentLine == "GREEN") {
+        clear_yellow();
+        clear_blue();
+        clear_red();
+        fill_color(currentLine);
+      } else if (currentLine == "YELLOW") {
+        clear_green();
+        clear_blue();
+        clear_red();
+        fill_color(currentLine);
+      } else if (currentLine == "RED") {
+        clear_yellow();
+        clear_blue();
+        clear_green();
+        fill_color(currentLine);
+      }
     }
   } else if (!api_status) {
     //in a perfect world the leds would accommadate different values
