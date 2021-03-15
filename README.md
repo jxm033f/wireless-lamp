@@ -52,6 +52,7 @@ cd wireless-lamp
 ```
 5. Open Arduino IDE -> File -> Open -> lamp-connection.ino <br />
         1. File is located wireless-lamp/lamp-connection
+	2. Install the Time library by Sketch -> Include Library <br />
 6. Upload Code which will allow it to run through the ESP32 <br />
         1. Change wifi connection from your network to ESP32
         2. After succesfully uploading you can disconnect the comp from the ESP32
