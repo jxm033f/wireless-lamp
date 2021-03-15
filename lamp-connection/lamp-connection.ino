@@ -184,20 +184,17 @@ void loop() {
       delay(10);
     }
   } else if (!api_status && !api_beingSet) {
-    if (alarmValue == LOW && alarm_isPressed && !time_beingSet) {
-      //t = now();
-      //Serial.println("Hour: " + String(hour())+ " Minute: " + String(minute()) + " Second: " + String(second()));
-      
+    if (alarmValue == LOW && alarm_isPressed && !time_beingSet) {      
+      Serial.println("Time is being set");
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print("TIME");
       Udp.endPacket();
-
-      Serial.println("Time is being set");
-
+      
       time_beingSet = true;
       alarm_isPressed = !alarm_isPressed;
       delay(10);
     } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && !hour_isSet && !min_isSet && !sec_isSet) {
+      Serial.println("Hour is set");
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print("MIN");
       Udp.endPacket();
@@ -206,6 +203,7 @@ void loop() {
       alarm_isPressed = !alarm_isPressed;
       delay(10);
     } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && hour_isSet && !min_isSet && !sec_isSet) {
+      Serial.println("Minute is set");
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print("SEC");
       Udp.endPacket();
@@ -214,6 +212,7 @@ void loop() {
       alarm_isPressed = !alarm_isPressed;
       delay(10);
     } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && hour_isSet && min_isSet && !sec_isSet) {
+      Serial.println("Second is set");
       Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
       Udp.print("CONFIRM");
       Udp.endPacket();
@@ -232,25 +231,27 @@ void loop() {
     min_isSet = false;
     sec_isSet = false;
     time_beingSet = false;
+    
     t = now();
     alarm_isOn = true;
-
     Serial.println("Alarm is on");
   }
 
   if (alarm_isOn) {
     int program_sec = (hour() * 360) + (minute() * 60) + second();
     int remove_sec = (hour(t) * 360) + (minute(t) * 60) + second(t);
-    int real_total_sec = program_sec - remove_sec;
-    int real_hr =  real_total_sec / 360;
+    int remaining_sec = program_sec - remove_sec;
+    
+    int real_hr =  remaining_sec / 360;
     if (real_hr > 0) {
-      real_total_sec %= 360;
+      remaining_sec %= 360;
     }
-    int real_min = real_total_sec / 60;
+    int real_min = remaining_sec / 60;
     if (real_min > 0) {
-      real_total_sec %= 60;
+      remaining_sec %= 60;
     }
-    int real_sec = real_total_sec;
+    int real_sec = remaining_sec;
+    
     String current_time = "";
     if (real_hr < 10) {
       current_time += "0";
@@ -272,7 +273,7 @@ void loop() {
     } else {
       current_time += String(real_sec);
     }
-    Serial.println(current_time);
+    
     Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
     Udp.print(current_time);
     Udp.endPacket();
@@ -337,9 +338,6 @@ void loop() {
       }
     }
   } else if (!api_status) {
-    //in a perfect world the leds would accommadate different values
-    //since we are focusing on LOW or HIGH there can only be two options
-    //i assume 550 as the baseline with bedroom lights or a sunny day
     Serial.println(photoValue);
     if (photoValue < 550) {
       clear_leds();
