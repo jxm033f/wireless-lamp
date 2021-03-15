@@ -52,7 +52,7 @@ while True:
         elif weather_info > weather_range[2]:
             arduino.write("R".encode())
     elif data == "CANCEL" and mode_api:
-        print("BACK TO ORIGINAL SETTINGS")
+        print("API IS TURNED OFF")
         mode_api = False
             
     if data and mode_time:
