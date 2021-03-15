@@ -1,4 +1,6 @@
+from psonic import *
 import json
+import random
 import serial
 import socket
 import time
@@ -96,9 +98,10 @@ while True:
             mode_alarm = True
     
     if data and mode_alarm:
-        if len(data) == 8:
-            print(data)
         if selected_time == data:
             print("HOORAY")
             mode_alarm = False
             arduino.write("F".encode())
+            for i in range(5):
+                play(random.randrange(50, 100))
+                sleep(0.5)
