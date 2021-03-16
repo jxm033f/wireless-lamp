@@ -18,8 +18,8 @@ Another feature that I was really excited about was using the Weather API or wea
 
 ## Hardware Configuration
 ### Buttons
-Blue Button  - Pin 5 <br />
-- This button only works for the wired lamp and not the wireless lamp <br />
+Blue Button - Pin 5 <br />
+* The blue button only works for the wired lamp and not the wireless lamp <br />
 Green Button - Pin 4 <br />
 
 ### Potentiometer
