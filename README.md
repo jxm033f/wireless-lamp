@@ -56,7 +56,15 @@ cd wireless-lamp
 6. Upload Code which will allow it to run through the ESP32 <br />
         1. Change wifi connection from your network to ESP32
         2. After succesfully uploading you can disconnect the comp from the ESP32
-7. Then run python-connection.py on Terminal in wireless-lamp directory
+7. Before running the python script open the Sonic Pi software
+	1. If not dowloaded:
+		1. Go to [Sonic Pi](https://sonic-pi.net/#rp) and download the DEF File.
+		2. Run the following Commands:
+```bash
+sudo apt update
+sudo apt install ./sonic-pi_3.3.1_1_armhf.deb
+```
+8. Then run python-connection.py on Terminal in wireless-lamp directory
 ```bash
 python3 python-connection.py
 ```
