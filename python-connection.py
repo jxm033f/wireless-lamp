@@ -8,9 +8,6 @@ import time
 LOCAL_UDP_IP = "192.168.1.2"
 SHARED_UDP_PORT = 4210
 
-arduino = serial.Serial('/dev/ttyUSB0', 115200)
-time.sleep(2)
-
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((LOCAL_UDP_IP, SHARED_UDP_PORT))
 
@@ -35,29 +32,10 @@ while True:
     data, addr = sock.recvfrom(2048)
     data = data.decode()
     if data and not mode_time and not mode_api:
-        if data == "API":
-            print("API IS TURNED ON")
-            mode_api = True
-        elif data == "TIME":
+        if data == "TIME":
             print("TIME IS BEING CONFIGURED")
             hms_option = 0
             mode_time = True
-            
-    if data.isdigit() and mode_api:
-        num = int(data)
-        weather_info = day_num[num-1]['temp']['day']
-        print("Weather for Day " + str(num) + " is " + str(weather_info))
-        if weather_info <= weather_range[0]:
-            arduino.write("B".encode())
-        elif weather_info > weather_range[0] and weather_info <= weather_range[1]:
-            arduino.write("G".encode())
-        elif weather_info > weather_range[1] and weather_info <= weather_range[2]:
-            arduino.write("Y".encode())
-        elif weather_info > weather_range[2]:
-            arduino.write("R".encode())
-    elif data == "CANCEL" and mode_api:
-        print("API IS TURNED OFF")
-        mode_api = False
             
     if data and mode_time:
         if data == "MIN":
@@ -101,7 +79,6 @@ while True:
         if selected_time == data:
             print("HOORAY")
             mode_alarm = False
-            arduino.write("F".encode())
             for i in range(5):
                 play(random.randrange(50, 100))
                 sleep(0.5)

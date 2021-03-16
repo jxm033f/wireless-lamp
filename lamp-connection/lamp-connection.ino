@@ -27,6 +27,17 @@ bool sec_isSet = false;
 bool alarm_isOn = false;
 time_t t;
 
+int current_hour = 0;
+int prev_hour = 0;
+int current_min = 0;
+int prev_min = 0;
+int current_sec = 0;
+int prev_sec = 0;
+
+int hour_timer;
+int min_timer;
+int sec_timer;
+
 #define CONSOLE_IP "192.168.1.2"
 #define CONSOLE_PORT 4210
 const char* ssid = "ESP32";
@@ -122,28 +133,6 @@ void loop() {
   int apiValue = digitalRead(API_BUTTON);
 
   if (lamp_working) {
-  
-    while (Serial.available() > 0) {
-      char c = Serial.read();
-      currentLine = c;
-    }
-    if (currentLine != "") {
-      if (currentLine == "B") {
-        currentLine = "BLUE";
-      } else if (currentLine == "G") {
-        currentLine = "GREEN";
-      } else if (currentLine == "Y") {
-        currentLine = "YELLOW";
-      } else if (currentLine == "R") {
-        currentLine = "RED";
-      } else if (currentLine == "F") {
-        alarm_isOn = false;
-        lamp_working = false;
-        currentLine = "";
-        Serial.println("Lamp is turned off");
-      }
-    }
-  
     if (!time_beingSet) {
       if (apiValue == LOW && api_isPressed && api_beingSet) {
         int which_day = (potenValue / 585) + 1;
@@ -197,6 +186,7 @@ void loop() {
         alarm_isPressed = !alarm_isPressed;
         delay(10);
       } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && !hour_isSet && !min_isSet && !sec_isSet) {
+        hour_timer = current_hour;
         Serial.println("Hour is set");
         Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
         Udp.print("MIN");
@@ -206,6 +196,7 @@ void loop() {
         alarm_isPressed = !alarm_isPressed;
         delay(10);
       } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && hour_isSet && !min_isSet && !sec_isSet) {
+        min_timer = current_min;
         Serial.println("Minute is set");
         Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
         Udp.print("SEC");
@@ -215,6 +206,7 @@ void loop() {
         alarm_isPressed = !alarm_isPressed;
         delay(10);
       } else if (alarmValue == LOW && alarm_isPressed && time_beingSet && hour_isSet && min_isSet && !sec_isSet) {
+        sec_timer = current_sec;
         Serial.println("Second is set");
         Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
         Udp.print("CONFIRM");
@@ -281,73 +273,56 @@ void loop() {
       Udp.print(current_time);
       Udp.endPacket();
       delay(10);
-    }
-  
-    if (time_beingSet) {
-      if (!hour_isSet && !min_isSet && !sec_isSet) {
-        int current_hour = potenValue /178;
-        int prev_hour = prevPoten / 178;
-        if (current_hour != prev_hour) {
-          Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-          Udp.print(current_hour);
-          Udp.endPacket();
-          delay(10);
-        }
-      } else if (hour_isSet && !min_isSet && !sec_isSet) {
-        int current_min = potenValue / 69;
-        int prev_min = prevPoten / 69;
-        if (current_min != prev_min) {
-          Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-          Udp.print(current_min);
-          Udp.endPacket();
-          delay(10);
-        }
-      } else if (hour_isSet && min_isSet && !sec_isSet) {
-        int current_sec = potenValue / 69;
-        int prev_sec = prevPoten / 69;
-        if (current_sec != prev_sec) {
-          Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
-          Udp.print(current_sec);
-          Udp.endPacket();
-          delay(10);
-        }
+
+      if (hour_timer == real_hr && min_timer == real_min && sec_timer == real_sec) {
+        lamp_working = false;
+        clear_leds();
       }
     }
+
+    if (lamp_working) {
     
-    if (api_status) {
-      if (photoValue < 550) {
-        clear_leds();
-      } else {
-        if (currentLine == "BLUE") {
-          clear_yellow();
-          clear_green();
-          clear_red();
-          fill_color(currentLine);
-        } else if (currentLine == "GREEN") {
-          clear_yellow();
-          clear_blue();
-          clear_red();
-          fill_color(currentLine);
-        } else if (currentLine == "YELLOW") {
-          clear_green();
-          clear_blue();
-          clear_red();
-          fill_color(currentLine);
-        } else if (currentLine == "RED") {
-          clear_yellow();
-          clear_blue();
-          clear_green();
-          fill_color(currentLine);
+      if (time_beingSet) {
+        if (!hour_isSet && !min_isSet && !sec_isSet) {
+          current_hour = potenValue /178;
+          prev_hour = prevPoten / 178;
+          if (current_hour != prev_hour) {
+            Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+            Udp.print(current_hour);
+            Udp.endPacket();
+            delay(10);
+          }
+        } else if (hour_isSet && !min_isSet && !sec_isSet) {
+          current_min = potenValue / 69;
+          prev_min = prevPoten / 69;
+          if (current_min != prev_min) {
+            Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+            Udp.print(current_min);
+            Udp.endPacket();
+            delay(10);
+          }
+        } else if (hour_isSet && min_isSet && !sec_isSet) {
+          current_sec = potenValue / 69;
+          prev_sec = prevPoten / 69;
+          if (current_sec != prev_sec) {
+            Udp.beginPacket(CONSOLE_IP, CONSOLE_PORT);
+            Udp.print(current_sec);
+            Udp.endPacket();
+            delay(10);
+          }
         }
       }
-    } else if (!api_status) {
-      if (photoValue < 550) {
-        clear_leds();
-      } else {
-        clear_blue();
-        clear_green();
-        clear_red();
-        fill_color("YELLOW");
+  
+      if (!api_status) {
+        Serial.println(photoValue);
+        if (photoValue < 2000) {
+          clear_leds();
+        } else {
+          clear_blue();
+          clear_green();
+          clear_red();
+          fill_color("YELLOW");
+        }
       }
     }
   } else {
