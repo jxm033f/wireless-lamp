@@ -1,7 +1,9 @@
 # Module 3: Wireless Lamp
 COMS BC 3930
 
-Through this module, I created a wireless lamp that reacts to a photoresister and some interactions via buttons and potentiometer. The feautures that this lamp includes are changes color based on current temperature and provides a timer when the lamp will turn automatically off which then the Raspberry Pi will produce a sound through Sonic Pi.
+Through this module, I created a wireless lamp that reacts to a photoresister and some interactions via buttons and potentiometer. The feautures that this lamp includes are brightness based on light in the room. Another feature it provides is a timer which will allow the lamp to turn off automatically but then the Raspberry Pi will also produce a sound through Sonic Pi.
+
+Another feature that I was really excited about was using the Weather API or weather data to change the lamp color based on the chosen day's temperature. I was only able to implement it by having the ESP32 being wired to the Raspberry Pi. If interested in seeing how it is implemented check out: https://github.com/jxm033f/wired-lamp
 
 ## Materials
 - Raspberry Pi
