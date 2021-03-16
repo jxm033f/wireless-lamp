@@ -70,3 +70,8 @@ sudo apt install ./sonic-pi_3.3.1_1_armhf.deb
 ```bash
 python3 python-connection.py
 ```
+
+## Links
+Blog: http://edblogs.columbia.edu/comsx3930-001-2021-1/2021/03/15/module-3-timed-lamp/ <br />
+Video 1: https://youtu.be/JJ3zeaau3Vo <br />
+Video 2: https://youtu.be/3AkQJ_7euQE <br />
