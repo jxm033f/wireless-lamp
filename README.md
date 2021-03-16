@@ -56,6 +56,8 @@ cd wireless-lamp
 6. Upload Code which will allow it to run through the ESP32 <br />
         1. Change wifi connection from your network to ESP32
         2. After succesfully uploading you can disconnect the comp from the ESP32
+		1. Plug in LiPo battery or other power supply
+		2. Click the RST button on the ESP32 to start program
 7. Before running the python script open the Sonic Pi software
 	1. If not dowloaded:
 		1. Go to [Sonic Pi](https://sonic-pi.net/#rp) and download the DEF File.
