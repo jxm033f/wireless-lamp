@@ -39,6 +39,8 @@ Yellow 2 - Pin 0 <br />
 Red 1 - Pin 18 <br />
 Red 2 - Pin 15 <br />
 
+* Only the Yellow LEDs respond with the wireless lamp. All LEDs respond with the wired lamp.
+
 ## Executing Program
 1. Go to [Arduino Site](https://www.arduino.cc/en/software)
 2. Download Linux ARM 32-bit (or one based on correct Operating System)
